@@ -1,0 +1,12 @@
+# macOS metadata
+.DS_Store
+
+# C++ build files
+*.o
+*.exe
+*.out
+
+# IDE-specific files
+.idea/
+.vscode/
+cmake-build-debug/
