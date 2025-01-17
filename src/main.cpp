@@ -1,8 +1,5 @@
 #include <iostream>
-#include <vector>
-#include <iomanip>
 #include <string>
-#include <stack>
 #include <cctype>
 
 #include "Node.h"
@@ -24,33 +21,28 @@ using namespace std;
 /// Main() Helper Functions
 
 // UFID can only contain 8 digits & must be unique
-bool isValidUFID(const string& UFID)
-{
-    //Checks UFID's length
-    if(UFID.length() != 8){
+bool isValidUFID(const string& UFID) {
+    if (UFID.length() != 8) {
+        cout << "UFID invalid: Incorrect length" << endl;
         return false;
     }
-
-    //Checks for only numbers in the UFID
-    for(char c : UFID){
-        if(!isdigit(c)){
+    for (char c : UFID) {
+        if (!isdigit(c)) {
+            cout << "UFID invalid: Contains non-digit characters" << endl;
             return false;
         }
     }
     return true;
 }
 
-// Names must only include [a-z,A-Z, & spaces]
-bool isValidName (string name) {
-    bool isValidName = true;
-
-    for(int i = 0; i < name.length(); i++){
-        if(!isalpha(name.at(i)) && !isspace(name.at(i))){
-            isValidName = false;
-            break;
+bool isValidName(string name) {
+    for (char c : name) {
+        if (!isalpha(c) && !isspace(c)) {
+            cout << "Name invalid: Contains invalid characters" << endl;
+            return false;
         }
     }
-    return isValidName;
+    return true;
 }
 
 // Verifies that the command is in the correct format
@@ -67,23 +59,33 @@ void handleInsert(const string& command, AVLTree &gatorTree) {
         return;
     }
 
-    int index = command.find_first_of('\"');
-    if (index == string::npos || command.find_last_of('\"') == index) {
+    int firstQuote = command.find_first_of('\"');
+    int lastQuote = command.find_last_of('\"');
+    if (firstQuote == string::npos || lastQuote == firstQuote) {
         cout << "unsuccessful. Ensure the name is enclosed in double quotes." << endl;
         return;
     }
 
-    string name = command.substr(0, index);
-    string check = command.substr(index + 2);
+    string name = command.substr(firstQuote + 1, lastQuote - firstQuote - 1);
+    string ufid = command.substr(lastQuote + 1);
+    ufid.erase(0, ufid.find_first_not_of(" "));
+    ufid.erase(ufid.find_last_not_of(" ") + 1);
 
-    if (isValidUFID(check) && isValidName(name)) {
-        int ID = stoi(check);
-        Node* newRoot = gatorTree.insert(gatorTree.getRoot(), name, ID);
-        gatorTree.setRoot(newRoot);
-        cout << "successful" << endl;
-    } else {
-        cout << "unsuccessful. Ensure UFID is an 8-digit number." << endl;
+
+    if (!isValidName(name)) {
+        cout << "unsuccessful. Invalid name. Names should contain only letters and spaces." << endl;
+        return;
     }
+
+    if (!isValidUFID(ufid)) {
+        cout << "unsuccessful. Invalid UFID. UFID must be an 8-digit number." << endl;
+        return;
+    }
+
+    int ID = stoi(ufid);
+    Node* newRoot = gatorTree.insert(gatorTree.getRoot(), name, ID);
+    gatorTree.setRoot(newRoot);
+    cout << "successful" << endl;
 }
 
 void handleRemove(const string& command, AVLTree &gatorTree) {
@@ -129,7 +131,6 @@ void handleFunctions(string command, AVLTree &gatorTree) {
     command = command.substr(index + 1);
 
     if (function == "insert") {
-        command = command.substr(1);
         handleInsert(command, gatorTree);
     } else if (function == "remove") {
         handleRemove(command, gatorTree);
@@ -215,3 +216,5 @@ int main() {
 
     return 0;
 }
+
+
